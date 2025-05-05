@@ -2,6 +2,8 @@
 #include "asn1fix_constraint.h"
 #include "asn1fix_crange.h"
 
+#include <stdio.h>
+
 #undef	FATAL
 #define	FATAL(fmt, args...)	do {			\
 		fprintf(stderr, "FATAL: ");		\
@@ -832,6 +834,7 @@ asn1constraint_compute_OER_range(const char *dbg_name, asn1p_expr_type_e expr_ty
 
 asn1cnst_range_t *
 asn1constraint_compute_PER_range(const char *dbg_name, asn1p_expr_type_e expr_type, const asn1p_constraint_t *ct, enum asn1p_constraint_type_e requested_ct_type, const asn1cnst_range_t *minmax, int *exmet, enum cpr_flags cpr_flags) {
+    fprintf(stderr, "asn1constraint_compute_PER_range");
     if(0) return asn1constraint_compute_constraint_range(dbg_name, expr_type, ct, requested_ct_type, minmax, exmet, cpr_flags | CPR_strict_PER_visibility);
     /* Due to peculiarities of PER constraint handling, we don't enable strict PER visibility upfront here. */
     return asn1constraint_compute_constraint_range(dbg_name, expr_type, ct, requested_ct_type, minmax, exmet, cpr_flags);
@@ -970,6 +973,19 @@ asn1constraint_compute_constraint_range(
     const asn1p_constraint_t *ct,
     enum asn1p_constraint_type_e requested_ct_type,
     const asn1cnst_range_t *minmax, int *exmet, enum cpr_flags cpr_flags) {
+
+    fprintf(stderr, "asn1constraint_compute_constraint_range(): ");
+    fprintf(stderr, "dbg_name: %s\n", dbg_name);
+    fprintf(stderr, "expr_type: %d\n", expr_type);
+    if (ct) {
+        fprintf(stderr, "ct->type: %d\n", ct->type);
+        fprintf(stderr, "ct->presence: %d\n", ct->presence);
+        fprintf(stderr, "ct->value: %d\n", ct->value);
+        fprintf(stderr, "ct->range_start: %d\n", ct->range_start);
+        fprintf(stderr, "ct->range_stop: %d\n", ct->range_stop);
+        fprintf(stderr, "ct->el_count: %d\n", ct->el_count);
+        fprintf(stderr, "ct->el_size: %d\n", ct->el_size);
+    }
     asn1cnst_range_t *range;
 	asn1cnst_range_t *tmp;
 	asn1p_value_t *vmin;
@@ -1200,12 +1216,13 @@ asn1constraint_compute_constraint_range(
 		return range;
 	case ACT_CA_CSV:	/* SIZE(1..2, 3..4) */
 	case ACT_CA_UNI:	/* SIZE(1..2) | FROM("ABCD") */
-
+        fprintf(stderr, "ACT_CA_CSV|ACT_CA_UNI\n");
 		/*
 		 * Grab the first valid constraint.
 		 */
 		tmp = 0;
 		for(i = 0; i < ct->el_count; i++) {
+		    fprintf(stderr, "element %d\n", i);
 			tmp = asn1constraint_compute_constraint_range(dbg_name, expr_type,
 				ct->elements[i], requested_ct_type, minmax, exmet,
 				cpr_flags);

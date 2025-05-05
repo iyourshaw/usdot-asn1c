@@ -14,6 +14,8 @@
 #include <asn1fix_export.h>	/* other exportables from libasn1fix */
 #include <asn1parser.h>
 
+#include <stdio.h>
+
 typedef struct tag2el_s {
 	struct asn1p_type_tag_s el_tag;
 	int el_no;
@@ -2037,6 +2039,18 @@ emit_single_member_OER_constraint_size(arg_t *arg, asn1cnst_range_t *range) {
 
 static int
 emit_single_member_PER_constraint(arg_t *arg, asn1cnst_range_t *range, int alphabetsize, const char *type) {
+    if (type) {
+        fprintf(stderr, "emit_single_member_PER_constraint hello %s\n", type);
+        if (range && strcmp(type, "SIZE") == 0) {
+            fprintf(stderr, "range left.type: %d, right.type: %d, extensible: %d\n",
+                range->left.type,
+                range->right.type,
+                range->extensible);
+            fprintf(stderr, "left.value: %lld\n", range->left.value);
+            fprintf(stderr, "right.value: %lld\n", range->right.value);
+        }
+    }
+
     if(!range || range->incompatible || range->not_PER_visible) {
         OUT("{ APC_UNCONSTRAINED,\t-1, -1,  0,  0 }");
 		return 0;
@@ -2049,12 +2063,15 @@ emit_single_member_PER_constraint(arg_t *arg, asn1cnst_range_t *range, int alpha
     }
 
     if(range->left.type == ARE_VALUE) {
+        fprintf(stderr, "range->left.type == ARE_VALUE\n");
 		if(range->right.type == ARE_VALUE) {
+		    fprintf(stderr, "range->right.type == ARE_VALUE\n");
 			asn1c_integer_t cover = 1;
 			asn1c_integer_t r = 1 + range->right.value
 					      - range->left.value;
 			size_t rbits;	/* Value range bits */
 			ssize_t ebits;	/* Value effective range bits */
+
 
 			if(range->empty_constraint)
 				r = 0;
@@ -2100,6 +2117,8 @@ emit_single_member_PER_constraint(arg_t *arg, asn1cnst_range_t *range, int alpha
 				}
 			}
 			}
+
+            fprintf(stderr, "rbits: %zu, ebits: %zd\n", rbits, ebits);
 
 			OUT("{ APC_CONSTRAINED%s,%s% d, % d, ",
 				range->extensible
@@ -2240,6 +2259,9 @@ emit_member_OER_constraints(arg_t *arg, asn1p_expr_t *expr, const char *pfx) {
 
 static int
 emit_member_PER_constraints(arg_t *arg, asn1p_expr_t *expr, const char *pfx) {
+
+    fprintf(stderr, "arg->target->target: %d\n", arg->target->target);
+
 	int save_target = arg->target->target;
 	asn1cnst_range_t *range;
 	asn1p_expr_type_e etype;
