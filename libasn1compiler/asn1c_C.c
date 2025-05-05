@@ -2368,8 +2368,10 @@ emit_member_PER_constraints(arg_t *arg, asn1p_expr_t *expr, const char *pfx) {
 	}
 	OUT(",\n");
 
+    fprintf(stderr, "before calling asn1constraint_compute_PER_range\n");
 	range = asn1constraint_compute_PER_range(expr->Identifier, etype,
 			expr->combined_constraints, ACT_CT_SIZE, 0, 0, 0);
+	fprintf(stderr, "after calling asn1constraint_compute_PER_range\n");
 	if(emit_single_member_PER_constraint(arg, range, 0, "SIZE"))
 		return -1;
 	asn1constraint_range_free(range);
