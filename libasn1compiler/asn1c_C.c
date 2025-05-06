@@ -14,6 +14,8 @@
 #include <asn1fix_export.h>	/* other exportables from libasn1fix */
 #include <asn1parser.h>
 
+
+
 #include <stdio.h>
 
 typedef struct tag2el_s {
@@ -2369,9 +2371,12 @@ emit_member_PER_constraints(arg_t *arg, asn1p_expr_t *expr, const char *pfx) {
 	OUT(",\n");
 
     fprintf(stderr, "before calling asn1constraint_compute_PER_range\n");
+    fprintf(stderr, "expr->combined_constraints:\n");
+    print_asn1p_constraint_t(expr->combined_constraints, 0);
 	range = asn1constraint_compute_PER_range(expr->Identifier, etype,
 			expr->combined_constraints, ACT_CT_SIZE, 0, 0, 0);
 	fprintf(stderr, "after calling asn1constraint_compute_PER_range\n");
+
 	if(emit_single_member_PER_constraint(arg, range, 0, "SIZE"))
 		return -1;
 	asn1constraint_range_free(range);

@@ -977,15 +977,15 @@ asn1constraint_compute_constraint_range(
     fprintf(stderr, "asn1constraint_compute_constraint_range(): \n");
     fprintf(stderr, "dbg_name: %s\n", dbg_name);
     fprintf(stderr, "expr_type: %d\n", expr_type);
-    if (ct) {
-        fprintf(stderr, "ct->type: %d\n", ct->type);
-        fprintf(stderr, "ct->presence: %d\n", ct->presence);
-        fprintf(stderr, "ct->value: %d\n", ct->value);
-        fprintf(stderr, "ct->range_start: %d\n", ct->range_start);
-        fprintf(stderr, "ct->range_stop: %d\n", ct->range_stop);
-        fprintf(stderr, "ct->el_count: %d\n", ct->el_count);
-        fprintf(stderr, "ct->el_size: %d\n", ct->el_size);
-    }
+    // if (ct) {
+    //     fprintf(stderr, "ct->type: %d\n", ct->type);
+    //     fprintf(stderr, "ct->presence: %d\n", ct->presence);
+    //     fprintf(stderr, "ct->value: %d\n", ct->value);
+    //     fprintf(stderr, "ct->range_start: %d\n", ct->range_start);
+    //     fprintf(stderr, "ct->range_stop: %d\n", ct->range_stop);
+    //     fprintf(stderr, "ct->el_count: %d\n", ct->el_count);
+    //     fprintf(stderr, "ct->el_size: %d\n", ct->el_size);
+    // }
     asn1cnst_range_t *range;
 	asn1cnst_range_t *tmp;
 	asn1p_value_t *vmin;
@@ -1215,8 +1215,14 @@ asn1constraint_compute_constraint_range(
 
 		return range;
 	case ACT_CA_CSV:	/* SIZE(1..2, 3..4) */
+	    fprintf(stderr, "ACT_CA_CSV\n");
+	        // If CSV and SIZE
+	        // Find extension marker
+            // If PER, don't iterate over anything after the extension marker
+            // Fall through
 	case ACT_CA_UNI:	/* SIZE(1..2) | FROM("ABCD") */
         fprintf(stderr, "ACT_CA_CSV|ACT_CA_UNI\n");
+
 		/*
 		 * Grab the first valid constraint.
 		 */

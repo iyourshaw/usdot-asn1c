@@ -6,6 +6,19 @@
 #include "asn1parser.h"
 #include "asn1p_expr.h"
 
+void print_asn1p_value_t(asn1p_value_t *v, int indent) {
+    if (!v) {
+        return;
+    }
+    char* type_name = v->type == ATV_INTEGER ? "ATV_INTEGER" : "OTHER";
+    fprintf(stderr, "%*s%s\n", indent, "", "asn1p_value_t: type: ");
+    fprintf(stderr, "%*s%s%d (%s)\n", indent + 5, "", "type: ", v->type, type_name);
+    if (v->type == ATV_INTEGER) {
+        int the_int = (int)v->value.v_integer;
+        fprintf(stderr, "%*s%s%d\n", indent + 5, "", "value: ", the_int);
+    }
+}
+
 void
 asn1p_value_set_source(asn1p_value_t *value, asn1p_module_t *module,
                        int lineno) {

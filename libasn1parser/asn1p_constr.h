@@ -4,6 +4,8 @@
 #ifndef	ASN1_PARSER_CONSTRAINT_H
 #define	ASN1_PARSER_CONSTRAINT_H
 
+#include <stdio.h>
+
 typedef struct asn1p_constraint_s {
 
 	enum asn1p_constraint_type_e {
@@ -67,6 +69,10 @@ typedef struct asn1p_constraint_s {
 	struct asn1p_module_s *module;	/* Defined in module */
 	int _lineno;	/* Position in a source file */
 } asn1p_constraint_t;
+
+void print_asn1p_constraint_t(asn1p_constraint_t *ct, int indent);
+
+
 
 /* Human-readable constraint type description */
 const char *asn1p_constraint_type2str(enum asn1p_constraint_type_e);

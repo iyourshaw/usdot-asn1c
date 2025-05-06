@@ -59,6 +59,8 @@ typedef struct asn1p_value_s {
 	} value;
 } asn1p_value_t;
 
+void print_asn1p_value_t(asn1p_value_t *v, int indent);
+
 /*
  * Destructor and constructors for value.
  * If ref, bits or buffer are omitted, the corresponding function returns
