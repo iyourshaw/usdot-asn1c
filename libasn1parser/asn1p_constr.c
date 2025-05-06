@@ -6,75 +6,7 @@
 
 #include "asn1parser.h"
 
-void print_asn1p_constraint_t(asn1p_constraint_t *ct, int indent) {
-    if (!ct) {
-        return;
-    }
-    fprintf(stderr, "%*s%s\n", indent, "", "print_asn1p_constraint_t:");
-    char* type_name = malloc(100);
-    switch (ct->type) {
-    case ACT_CT_SIZE:
-        strcpy(type_name, "ACT_CT_SIZE");
-        break;
-    case ACT_CA_SET:
-        strcpy(type_name, "ACT_CA_SET");
-        break;
-    case ACT_CA_CSV:
-        strcpy(type_name, "ACT_CA_CSV");
-        break;
-    case ACT_EL_EXT:
-        strcpy(type_name, "ACT_EL_EXT");
-        break;
-    case ACT_EL_VALUE:
-        strcpy(type_name, "ACT_EL_VALUE");
-        break;
-    default:
-        strcpy(type_name, "OTHER");
-    }
-    fprintf(stderr, "%*s%s%d (%s)\n", indent, "", "type: ", ct->type, type_name);
-    free(type_name);
-    // fprintf(stderr, "%*s%s%d\n", indent, "", "presence: ", ct->presence);
 
-    if (ct->containedSubtype) {
-        fprintf(stderr, "%*s%s\n", indent, "", "containedSubtype: ");
-        print_asn1p_value_t(ct->containedSubtype, indent);
-    }
-
-    if (ct->value) {
-        fprintf(stderr, "%*s%s\n", indent, "", "value: ");
-        print_asn1p_value_t(ct->value, indent);
-    }
-
-    if (ct->range_start) {
-        fprintf(stderr, "%*s%s\n", indent, "", "range_start: ");
-        print_asn1p_value_t(ct->range_start, indent);
-    }
-
-    if (ct->range_stop) {
-        fprintf(stderr, "%*s%s\n", indent, "", "range_stop: ");
-        print_asn1p_value_t(ct->range_stop, indent);
-    }
-
-    fprintf(stderr, "%*s%s%u\n", indent, "", "el_count: ", ct->el_count);
-    // fprintf(stderr, "%*s%s%u\n", indent, "", "el_size: ", ct->el_size);
-
-    // fprintf(stderr, "%*s%s%d\n", indent, "", "lineno: ", ct->_lineno);
-
-    // if (ct->parent_ct) {
-    //     fprintf(stderr, "parent:\n");
-    //     print_asn1p_constraint_t(ct->parent_ct);
-    // }
-
-    if (ct->elements) {
-        fprintf(stderr, "%*s%s\n", indent, "", "elements:");
-        for (int i = 0; i < ct->el_count; i++) {
-            fprintf(stderr, "%*s%s%d:\n", indent, "", "element ", i);
-            print_asn1p_constraint_t(ct->elements[i], indent + 5);
-        }
-    }
-
-
-}
 
 void
 asn1p_constraint_set_source(asn1p_constraint_t *ct,
@@ -308,3 +240,51 @@ asn1p_get_component_relation_constraint(asn1p_constraint_t *ct) {
     return NULL;
 }
 
+
+
+
+void print_asn1p_constraint_t(asn1p_constraint_t *ct, int indent) {
+    if (!ct) {
+        return;
+    }
+    fprintf(stderr, "%*s%s\n", indent, "", "print_asn1p_constraint_t:");
+    const char* type_name = asn1p_constraint_type2str(ct->type);
+    fprintf(stderr, "%*s%s%d (%s)\n", indent, "", "type: ", ct->type, type_name);
+
+    // fprintf(stderr, "%*s%s%d\n", indent, "", "presence: ", ct->presence);
+
+    if (ct->containedSubtype) {
+        fprintf(stderr, "%*s%s\n", indent, "", "containedSubtype: ");
+        print_asn1p_value_t(ct->containedSubtype, indent);
+    }
+
+    if (ct->value) {
+        fprintf(stderr, "%*s%s\n", indent, "", "value: ");
+        print_asn1p_value_t(ct->value, indent);
+    }
+
+    if (ct->range_start) {
+        fprintf(stderr, "%*s%s\n", indent, "", "range_start: ");
+        print_asn1p_value_t(ct->range_start, indent);
+    }
+
+    if (ct->range_stop) {
+        fprintf(stderr, "%*s%s\n", indent, "", "range_stop: ");
+        print_asn1p_value_t(ct->range_stop, indent);
+    }
+
+    fprintf(stderr, "%*s%s%u\n", indent, "", "el_count: ", ct->el_count);
+    // fprintf(stderr, "%*s%s%u\n", indent, "", "el_size: ", ct->el_size);
+
+    // fprintf(stderr, "%*s%s%d\n", indent, "", "lineno: ", ct->_lineno);
+
+    if (ct->elements) {
+        fprintf(stderr, "%*s%s\n", indent, "", "elements:");
+        for (int i = 0; i < ct->el_count; i++) {
+            fprintf(stderr, "%*s%s%d:\n", indent, "", "element ", i);
+            print_asn1p_constraint_t(ct->elements[i], indent + 5);
+        }
+    }
+
+
+}

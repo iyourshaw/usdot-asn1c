@@ -832,12 +832,93 @@ asn1constraint_compute_OER_range(const char *dbg_name, asn1p_expr_type_e expr_ty
     return asn1constraint_compute_constraint_range(dbg_name, expr_type, ct, requested_ct_type, minmax, exmet, cpr_flags | CPR_strict_OER_visibility);
 }
 
+// Copied with modifications from asn1p_constr.c
+asn1p_constraint_t* clone_constraint(const asn1p_constraint_t* src) {
+    asn1p_constraint_t *clone = asn1p_constraint_new(src->_lineno, src->module);
+    if (clone) {
+        clone->type = src->type;
+        clone->presence = src->presence;
+        if (src->containedSubtype) {
+            clone->containedSubtype = asn1p_value_clone(src->containedSubtype);
+        }
+        if (src->value) {
+            clone->value = asn1p_value_clone(src->value);
+        }
+        if (src->range_start) {
+            clone->range_start = asn1p_value_clone(src->range_start);
+        }
+        if (src->range_stop) {
+            clone->range_stop = asn1p_value_clone(src->range_stop);
+        }
+        for(unsigned int i = 0; i < src->el_count; i++) {
+            asn1p_constraint_t *t = clone_constraint(src->elements[i]);
+            if(!t) {
+                asn1p_constraint_free(clone);
+                return NULL;
+            }
+            if(asn1p_constraint_insert(clone, t)) {
+                asn1p_constraint_free(clone);
+                asn1p_constraint_free(t);
+                return NULL;
+            }
+        }
+        assert(clone->el_count == src->el_count);
+        clone->_lineno = src->_lineno;
+    }
+    return clone;
+}
+
+// Copied with modifications from asn1fix_constraint.c
+static void
+_remove_extensions(asn1p_constraint_t *ct) {
+    unsigned int i;
+    if(!ct) return;
+
+    for(i = 0; i < ct->el_count; i++) {
+        if(ct->elements[i]->type == ACT_EL_EXT)
+            break;
+        _remove_extensions(ct->elements[i]);
+    }
+
+    /* Keep the extensibility mark */
+    i++;
+
+    /* Remove elements after the extensibility mark.  Keep the extensibility mark itself */
+    for(; i < ct->el_count; ct->el_count--) {
+        asn1p_constraint_t *rm;
+        rm = ct->elements[ct->el_count-1];
+        asn1p_constraint_free(rm);
+    }
+
+    if(i < ct->el_size)
+        ct->elements[i] = 0;
+}
+
 asn1cnst_range_t *
 asn1constraint_compute_PER_range(const char *dbg_name, asn1p_expr_type_e expr_type, const asn1p_constraint_t *ct, enum asn1p_constraint_type_e requested_ct_type, const asn1cnst_range_t *minmax, int *exmet, enum cpr_flags cpr_flags) {
+
     fprintf(stderr, "asn1constraint_compute_PER_range\n");
-    if(0) return asn1constraint_compute_constraint_range(dbg_name, expr_type, ct, requested_ct_type, minmax, exmet, cpr_flags | CPR_strict_PER_visibility);
-    /* Due to peculiarities of PER constraint handling, we don't enable strict PER visibility upfront here. */
-    return asn1constraint_compute_constraint_range(dbg_name, expr_type, ct, requested_ct_type, minmax, exmet, cpr_flags);
+    fprintf(stderr, "dbg_name: %s\n", dbg_name);
+    fprintf(stderr, "expr_type: %d\n", expr_type);
+    fprintf(stderr, "requested constraint type: %s\n", asn1p_constraint_type2str(requested_ct_type));
+
+    asn1cnst_range_t *range;
+    if (expr_type == ASN_BASIC_BIT_STRING && requested_ct_type == ACT_CT_SIZE) {
+        asn1p_constraint_t *ct_no_size_extensions = clone_constraint(ct);
+        _remove_extensions(ct_no_size_extensions);
+        fprintf(stderr, "Removed extensions\n");
+        print_asn1p_constraint_t(ct_no_size_extensions, 0);
+
+        range = asn1constraint_compute_constraint_range(dbg_name, expr_type, ct_no_size_extensions, requested_ct_type, minmax, exmet, cpr_flags);
+
+        asn1p_constraint_free(ct_no_size_extensions);
+    } else {
+        // if(0) return asn1constraint_compute_constraint_range(dbg_name, expr_type, ct_no_size_extensions, requested_ct_type, minmax, exmet, cpr_flags | CPR_strict_PER_visibility);
+        /* Due to peculiarities of PER constraint handling, we don't enable strict PER visibility upfront here. */
+        range = asn1constraint_compute_constraint_range(dbg_name, expr_type, ct, requested_ct_type, minmax, exmet, cpr_flags);
+    }
+
+    return range;
 }
 
 asn1cnst_range_t *
