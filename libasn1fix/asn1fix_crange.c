@@ -832,33 +832,32 @@ asn1constraint_compute_OER_range(const char *dbg_name, asn1p_expr_type_e expr_ty
     return asn1constraint_compute_constraint_range(dbg_name, expr_type, ct, requested_ct_type, minmax, exmet, cpr_flags | CPR_strict_OER_visibility);
 }
 
-// Copied with modifications from asn1fix_constraint.c/_remove_extensions function
-// Recursive removes everything after extension markers, but keeps the extension
-// marker.
-static void
-_remove_after_extension_marker(asn1p_constraint_t *ct) {
-    unsigned int i;
-    if(!ct) return;
-
-    for(i = 0; i < ct->el_count; i++) {
-        if(ct->elements[i]->type == ACT_EL_EXT)
-            break;
-        _remove_after_extension_marker(ct->elements[i]);
-    }
-
-    /* Keep the extensibility mark */
-    i++;
-
-    /* Remove elements after the extensibility mark. */
-    for(; i < ct->el_count; ct->el_count--) {
-        asn1p_constraint_t *rm;
-        rm = ct->elements[ct->el_count-1];
-        asn1p_constraint_free(rm);
-    }
-
-    if(i < ct->el_size)
-        ct->elements[i] = 0;
-}
+// // Copied with modifications from asn1fix_constraint.c/_remove_extensions function
+// // Recursive removes everything after extension markers, but keeps the extension
+// // marker.
+// static void
+// _remove_after_extension_marker(asn1p_constraint_t *ct) {
+//     unsigned int i;
+//     if(!ct) return;
+//
+//     for(i = 0; i < ct->el_count; i++) {
+//         if(ct->elements[i]->type == ACT_EL_EXT)
+//             break;
+//         _remove_after_extension_marker(ct->elements[i]);
+//     }
+//
+//     /* Keep the extensibility mark */
+//     i++;
+//
+//     /* Remove elements after the extensibility mark. */
+//     for(; i < ct->el_count; ct->el_count--) {
+//         asn1p_constraint_t *rm = ct->elements[ct->el_count - 1];
+//         asn1p_constraint_free(rm);
+//     }
+//
+//     if(i < ct->el_size)
+//         ct->elements[i] = 0;
+// }
 
 asn1cnst_range_t *
 asn1constraint_compute_PER_range(const char *dbg_name, asn1p_expr_type_e expr_type, const asn1p_constraint_t *ct, enum asn1p_constraint_type_e requested_ct_type, const asn1cnst_range_t *minmax, int *exmet, enum cpr_flags cpr_flags) {
@@ -883,6 +882,12 @@ asn1constraint_compute_PER_range(const char *dbg_name, asn1p_expr_type_e expr_ty
 
     fprintf(stderr, "size constraint can apply: %d\n", size_constraint_can_apply);
 
+    if (!size_constraint_can_apply) {
+        fprintf(stderr, "asdf\n");
+        print_asn1p_constraint_t(ct, 0);
+        fprintf(stderr, "asdh\n");
+    }
+
     asn1cnst_range_t *range;
 
     //
@@ -898,7 +903,7 @@ asn1constraint_compute_PER_range(const char *dbg_name, asn1p_expr_type_e expr_ty
     //
     // However, this is a little too general since the following sections on encoding specific types with size
     // constraints state that extensions to PER-visible size constraints are not used in calculating ranges and length
-    // determinants for PER encodings.  i.e. size extensions are effectively NOT PER-visible.
+    // determinants for PER encodings.  i.e. Size EXTENSIONS are effectively NOT PER-visible.
     //
     // "Encoding the bitstring type", sec 16.6 says:
     //
@@ -926,13 +931,13 @@ asn1constraint_compute_PER_range(const char *dbg_name, asn1p_expr_type_e expr_ty
     //
     // which says that set-of types are encoded the same as sequence-of types.
     //
-    if (size_constraint_can_apply && requested_ct_type == ACT_CT_SIZE) {
+    if (ct && size_constraint_can_apply && requested_ct_type == ACT_CT_SIZE) {
 
         // Clone the constraint locally to do this, so computations for other encodings using it aren't affected
         asn1p_constraint_t *ct_no_size_extensions
             = asn1p_constraint_clone((asn1p_constraint_t *)ct); // Cast to non-const to avoid warning
 
-        _remove_after_extension_marker(ct_no_size_extensions);
+        asn1constraint_remove_after_extension_marker(ct_no_size_extensions);
 
         fprintf(stderr, "Removed extensions\n");
         print_asn1p_constraint_t(ct_no_size_extensions, 0);

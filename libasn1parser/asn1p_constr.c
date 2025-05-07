@@ -244,10 +244,12 @@ asn1p_get_component_relation_constraint(asn1p_constraint_t *ct) {
 
 
 void print_asn1p_constraint_t(asn1p_constraint_t *ct, int indent) {
+    fprintf(stderr, "%*s%s\n", indent, "", "print_asn1p_constraint_t:");
     if (!ct) {
+        fprintf(stderr, "ct = NULL\n");
         return;
     }
-    fprintf(stderr, "%*s%s\n", indent, "", "print_asn1p_constraint_t:");
+
     const char* type_name = asn1p_constraint_type2str(ct->type);
     fprintf(stderr, "%*s%s%d (%s)\n", indent, "", "type: ", ct->type, type_name);
 
