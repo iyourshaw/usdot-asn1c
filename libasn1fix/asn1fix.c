@@ -1,5 +1,6 @@
 #include "asn1fix_internal.h"
 #include "asn1fix.h"
+#include <strings.h>
 
 /* Print everything to stderr */
 static void _default_error_logger(int _severity, const char *fmt, ...);
@@ -538,7 +539,7 @@ asn1f_check_duplicate(arg_t *arg) {
 
 			if(tmparg.expr == arg->expr) break;
 
-			if(strcmp(tmparg.expr->Identifier,
+			if(strcasecmp(tmparg.expr->Identifier,
 				  arg->expr->Identifier))
 				continue;
 
