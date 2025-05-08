@@ -3,6 +3,7 @@
 #include "asn1c_misc.h"
 #include <asn1_buffer.h>
 #include <genhash.h>
+#include <stdio.h>
 
 struct intl_name {
     asn1p_expr_t *expr;
@@ -33,7 +34,9 @@ void
 c_name_clash_finder_init() {
     assert(used_names_hash == NULL);
     used_names_hash =
-        genhash_new(cmpf_string, hashf_string, NULL, name_entry_destroy);
+        genhash_new(cmpf_string_case_insensitive,
+            hashf_string_case_insensitive, NULL,
+            name_entry_destroy);
     assert(used_names_hash);
 }
 
@@ -45,11 +48,14 @@ c_name_clash_finder_destroy() {
 
 static void
 register_global_name(asn1p_expr_t *expr, const char *name) {
+    fprintf(stderr, "register_global_name: %s\n", name);
     struct intl_name *n;
 
     n = genhash_get(used_names_hash, (const void *)name);
+
     if(n) {
         if(!(expr->_mark & TM_NAMEGIVEN) && (expr != n->expr)) {
+            fprintf(stderr, "clash matched: %s\n", n->name);
             n->clashes_with = expr;
             expr->ref_cnt++;
             return;

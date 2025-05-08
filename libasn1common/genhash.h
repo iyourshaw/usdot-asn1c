@@ -211,7 +211,7 @@ int genhash_iter(genhash_iter_t *iter, void */***/key, void */***/val);
  */
 void genhash_iter_done(genhash_iter_t *iter);
 
-
+
 /****************************************************************************/
 
 /*
@@ -225,6 +225,8 @@ unsigned int hashf_void (const void *key);
 int cmpf_void (const void *key1, const void *key2);
 
 unsigned int hashf_string (const void *key);
+unsigned int hashf_string_case_insensitive (const void *key);
 int cmpf_string (const void *key1, const void *key2);
+int cmpf_string_case_insensitive(const void *key1, const void *key2);
 
 #endif	/* __GENHASH_H__ */

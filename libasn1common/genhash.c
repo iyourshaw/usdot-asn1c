@@ -57,10 +57,13 @@
 #include <sys/types.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <assert.h>
 #include <stddef.h>
 #include <errno.h>
 #include "genhash.h"
+
+#include <ctype.h>
 
 /* 1M entries, 4M RAM */
 #define	DEFAULT_MAXIMUM_HASH_BUCKETS_NUMBER	(1024 * 1024)
@@ -805,8 +808,26 @@ hashf_string(const void *keyarg) {
 	return (h);
 }
 
+unsigned int
+hashf_string_case_insensitive(const void *keyarg) {
+    register const unsigned char *key;
+    register unsigned int h;
+    register unsigned char c;
+
+    key = keyarg;
+    for (h = 0; (c = *key++);)
+        dcharhash(h, toupper(c));
+
+    return (h);
+}
+
 int
 cmpf_string(const void *key1, const void *key2) {
 	return strcmp((const char *)key1, (const char *)key2);
+}
+
+int
+cmpf_string_case_insensitive(const void *key1, const void *key2) {
+    return strcasecmp(key1, key2);
 }
 
