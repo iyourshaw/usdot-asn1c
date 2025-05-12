@@ -225,8 +225,14 @@ unsigned int hashf_void (const void *key);
 int cmpf_void (const void *key1, const void *key2);
 
 unsigned int hashf_string (const void *key);
-unsigned int hashf_string_case_insensitive (const void *key);
 int cmpf_string (const void *key1, const void *key2);
+
+/*
+ * String hash and equals functions that can distinguish an ASN.1 typereference
+ * (initial capital letter) from an ASN.1valuereference (initial lower case
+ * letter), but that treats type references as equal regardless of case.
+ */
+unsigned int hashf_string_case_insensitive (const void *key);
 int cmpf_string_case_insensitive(const void *key1, const void *key2);
 
 #endif	/* __GENHASH_H__ */

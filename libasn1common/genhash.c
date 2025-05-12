@@ -808,6 +808,13 @@ hashf_string(const void *keyarg) {
 	return (h);
 }
 
+
+
+int
+cmpf_string(const void *key1, const void *key2) {
+	return strcmp((const char *)key1, (const char *)key2);
+}
+
 unsigned int
 hashf_string_case_insensitive(const void *keyarg) {
     register const unsigned char *key;
@@ -816,18 +823,40 @@ hashf_string_case_insensitive(const void *keyarg) {
 
     key = keyarg;
     for (h = 0; (c = *key++);)
-        dcharhash(h, toupper(c));
+        if (h == 0) {
+            dcharhash(h, c);
+        } else {
+            dcharhash(h, toupper(c));
+        }
 
     return (h);
 }
 
 int
-cmpf_string(const void *key1, const void *key2) {
-	return strcmp((const char *)key1, (const char *)key2);
-}
-
-int
 cmpf_string_case_insensitive(const void *key1, const void *key2) {
-    return strcasecmp(key1, key2);
+
+    // Compare the first character
+    const int compare_first_char = strncmp(key1, key2, 1);
+    const unsigned int len1 = strlen(key1);
+    const unsigned int len2 = strlen(key2);
+    if (compare_first_char != 0) {
+        return compare_first_char;
+    }
+
+    // If either string only has one or fewer chars we are done
+    if (len1 <= 1 || len2 <= 1) {
+        return compare_first_char;
+    }
+
+    // First character is the same
+    const char first_char = ((const char *)key1)[0];
+
+    // Both strings have at least 2 chars, compare the rest after the first
+    if (isupper(first_char)) {
+        // Case-insensitive comparison for typereference
+        return strcasecmp(key1 + 1, key2 + 1);
+    }
+    // Normal comparison for valuereference
+    return strcmp(key1 + 1, key2 + 1);
 }
 

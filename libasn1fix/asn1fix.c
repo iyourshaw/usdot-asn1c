@@ -1,6 +1,6 @@
 #include "asn1fix_internal.h"
 #include "asn1fix.h"
-#include <strings.h>
+#include "genhash.h"
 
 /* Print everything to stderr */
 static void _default_error_logger(int _severity, const char *fmt, ...);
@@ -539,7 +539,8 @@ asn1f_check_duplicate(arg_t *arg) {
 
 			if(tmparg.expr == arg->expr) break;
 
-			if(strcasecmp(tmparg.expr->Identifier,
+		    // Consider typereferences as clashing with case insensitive comparison
+			if(cmpf_string_case_insensitive(tmparg.expr->Identifier,
 				  arg->expr->Identifier))
 				continue;
 
