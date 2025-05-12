@@ -539,10 +539,16 @@ asn1f_check_duplicate(arg_t *arg) {
 
 			if(tmparg.expr == arg->expr) break;
 
-		    // Consider typereferences as clashing with case insensitive comparison
-			if(cmpf_string_case_insensitive(tmparg.expr->Identifier,
-				  arg->expr->Identifier))
-				continue;
+		    if (arg->flags & A1F_CASE_INSENSITIVE_FILENAMES) {
+		        // Consider typereferences as clashing with case-insensitive comparison
+		        if(cmpf_string_case_insensitive(tmparg.expr->Identifier,
+                      arg->expr->Identifier))
+		            continue;
+		    } else {
+		        // Normal case-sensitive comparison
+		        if(strcmp(tmparg.expr->Identifier, arg->expr->Identifier))
+		            continue;
+		    }
 
 			/* resolve clash of Identifier in different modules */
 			int oid_exist = (tmparg.expr->module->module_oid && arg->expr->module->module_oid);
@@ -562,7 +568,7 @@ asn1f_check_duplicate(arg_t *arg) {
 			"ASN.1 expression \"%s\" at line %d of module %s\n"
 			"clashes with expression \"%s\" at line %d of module %s"
 			"%s%s%s.\n"
-			"Rename or remove either instance "
+			"Rename or remove either instance, or use -fcompound-names "
 				"to resolve the conflict",
 				arg->expr->Identifier,
 				arg->expr->_lineno,

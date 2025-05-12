@@ -119,6 +119,8 @@ main(int ac, char **av) {
             } else if(strcmp(optarg, "compound-names") == 0) {
                 asn1_compiler_flags |= A1C_COMPOUND_NAMES;
                 asn1_fixer_flags |= A1F_COMPOUND_NAMES;
+            } else if (strcmp(optarg, "case-insensitive-filenames") == 0) {
+                asn1_fixer_flags |= A1F_CASE_INSENSITIVE_FILENAMES;
             } else if(strcmp(optarg, "indirect-choice") == 0) {
                 asn1_compiler_flags |= A1C_INDIRECT_CHOICE;
             } else if(strncmp(optarg, "known-extern-type=", 18) == 0) {
@@ -584,6 +586,8 @@ usage(const char *av0) {
 
 "  -fbless-SIZE          Allow SIZE() constraint for INTEGER etc (non-std.)\n"
 "  -fcompound-names      Disambiguate C's struct NAME's inside top-level types\n"
+"  -fcase-insensitive-filenames   Ensure generated source file names are unique in\n"
+"                                 case-insensitive file systems.\n"
 "  -findirect-choice     Compile members of CHOICE as indirect pointers\n"
 "  -fincludes-quoted     Generate #includes in \"double\" instead of <angle> quotes\n"
 "  -fknown-extern-type=<name>    Pretend the specified type is known\n"
