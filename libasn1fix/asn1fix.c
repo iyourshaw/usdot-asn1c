@@ -1,6 +1,12 @@
 #include "asn1fix_internal.h"
 #include "asn1fix.h"
-#include "genhash.h"
+
+/* For POSIX strcasecmp or MSVC _stricmp function */
+#ifdef _WIN32
+#define strcasecmp _stricmp
+#else
+#include <strings.h>
+#endif
 
 /* Print everything to stderr */
 static void _default_error_logger(int _severity, const char *fmt, ...);
@@ -356,8 +362,7 @@ phase_1_1(arg_t *arg, int prm2) {
 	}
 
 	if(!expr->lhs_params) {
-	    if (arg->expr->meta_type == AMT_TYPEREF &&
-	        arg->flags & A1F_COMPOUND_NAMES_ALL) {
+	    if (arg->flags & A1F_COMPOUND_NAMES_ALL) {
 	        /* -fcompound-names-all is set: Mark all type references as clashing
 	         * to qualify all types with module */
 	        arg->expr->_mark |= TM_NAMECLASH;
@@ -533,6 +538,40 @@ asn1f_check_constraints(arg_t *arg) {
 	return rvalue;
 }
 
+/*
+ * String comparison function that can distinguish an ASN.1 type reference
+ * (initial capital letter) from an ASN.1 value reference (initial lower case
+ * letter), and that treats type references as equal regardless of case.
+ */
+static int
+asn1f_compare_typerefs_case_insensitive(const void *key1, const void *key2) {
+
+    /* Compare the first character */
+    const int compare_first_char = strncmp(key1, key2, 1);
+    const unsigned int len1 = strlen(key1);
+    const unsigned int len2 = strlen(key2);
+    if (compare_first_char != 0) {
+        return compare_first_char;
+    }
+
+    /* If either string only has one or fewer chars we are done */
+    if (len1 <= 1 || len2 <= 1) {
+        return compare_first_char;
+    }
+
+    /* First character is the same */
+    const char first_char = ((const char *)key1)[0];
+
+    /* Both strings have at least 2 chars, compare the rest after the first */
+    if (isupper(first_char)) {
+        // Case-insensitive comparison for type reference
+        return strcasecmp(key1 + 1, key2 + 1);
+    }
+
+    /* Normal comparison for value reference */
+    return strcmp(key1 + 1, key2 + 1);
+}
+
 static int
 asn1f_check_duplicate(arg_t *arg) {
 	arg_t tmparg = *arg;
@@ -565,7 +604,7 @@ asn1f_check_duplicate(arg_t *arg) {
 		    if (arg->flags & A1F_CASE_INSENSITIVE_FILENAMES) {
 		        /* Consider type references as clashing with case-insensitive
 		         * comparison */
-		        if(cmpf_string_case_insensitive(tmparg.expr->Identifier,
+		        if(asn1f_compare_typerefs_case_insensitive(tmparg.expr->Identifier,
 		            arg->expr->Identifier))
 		            continue;
 		    } else {
@@ -593,8 +632,8 @@ asn1f_check_duplicate(arg_t *arg) {
 			"ASN.1 expression \"%s\" at line %d of module %s\n"
 			"clashes with expression \"%s\" at line %d of module %s"
 			"%s%s%s.\n"
-			"Rename or remove either instance "
-				"to resolve the conflict",
+			"Rename or remove either instance, or use the '-fcompound-names' "
+				"option, to resolve the conflict",
 				arg->expr->Identifier,
 				arg->expr->_lineno,
 				arg->mod->ModuleName,

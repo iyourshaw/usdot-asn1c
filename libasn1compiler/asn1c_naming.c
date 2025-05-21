@@ -33,8 +33,7 @@ void
 c_name_clash_finder_init() {
     assert(used_names_hash == NULL);
     used_names_hash =
-        genhash_new(cmpf_string_case_insensitive,
-            hashf_string_case_insensitive, NULL, name_entry_destroy);
+        genhash_new(cmpf_string, hashf_string, NULL, name_entry_destroy);
     assert(used_names_hash);
 }
 
