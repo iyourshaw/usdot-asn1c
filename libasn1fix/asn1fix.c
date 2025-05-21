@@ -1,5 +1,6 @@
 #include "asn1fix_internal.h"
 #include "asn1fix.h"
+#include "genhash.h"
 
 /* Print everything to stderr */
 static void _default_error_logger(int _severity, const char *fmt, ...);
@@ -73,6 +74,22 @@ asn1f_process(asn1p_t *asn, enum asn1f_flags flags,
 				"Allow the same symbol name defined in two different modules");
 		}
 	}
+
+    if (flags & A1F_CASE_INSENSITIVE_FILENAMES) {
+        arg.flags |= A1F_CASE_INSENSITIVE_FILENAMES;
+        flags &= ~A1F_CASE_INSENSITIVE_FILENAMES;
+        if (arg.debug) {
+            arg.debug(-1, "Case insensitive filenames");
+        }
+    }
+
+    if (flags & A1F_COMPOUND_NAMES_ALL) {
+        arg.flags |= A1F_COMPOUND_NAMES_ALL;
+        flags &= ~A1F_COMPOUND_NAMES_ALL;
+        if (arg.debug) {
+            arg.debug(-1, "Use compound names for all types");
+        }
+    }
 
 	a1f_replace_me_with_proper_interface_arg = arg;
 
@@ -338,10 +355,17 @@ phase_1_1(arg_t *arg, int prm2) {
 		return 0;	/* Already done! */
 	}
 
-	/* Check whether this type is a duplicate */
 	if(!expr->lhs_params) {
-		ret = asn1f_check_duplicate(arg);
-		RET2RVAL(ret, rvalue);
+	    if (arg->expr->meta_type == AMT_TYPEREF &&
+	        arg->flags & A1F_COMPOUND_NAMES_ALL) {
+	        /* -fcompound-names-all is set: Mark all type references as clashing
+	         * to qualify all types with module */
+	        arg->expr->_mark |= TM_NAMECLASH;
+	    } else {
+	        /* Check whether this type is a duplicate */
+	        ret = asn1f_check_duplicate(arg);
+	        RET2RVAL(ret, rvalue);
+	    }
 	}
 
 	DEBUG("=== Now processing \"%s\" (%d/0x%x) at line %d ===",
@@ -538,9 +562,18 @@ asn1f_check_duplicate(arg_t *arg) {
 
 			if(tmparg.expr == arg->expr) break;
 
-			if(strcmp(tmparg.expr->Identifier,
-				  arg->expr->Identifier))
-				continue;
+		    if (arg->flags & A1F_CASE_INSENSITIVE_FILENAMES) {
+		        /* Consider type references as clashing with case-insensitive
+		         * comparison */
+		        if(cmpf_string_case_insensitive(tmparg.expr->Identifier,
+		            arg->expr->Identifier))
+		            continue;
+		    } else {
+		        /* Normal case-sensitive comparison */
+		        if(strcmp(tmparg.expr->Identifier,
+		            arg->expr->Identifier))
+		            continue;
+		    }
 
 			/* resolve clash of Identifier in different modules */
 			int oid_exist = (tmparg.expr->module->module_oid && arg->expr->module->module_oid);
