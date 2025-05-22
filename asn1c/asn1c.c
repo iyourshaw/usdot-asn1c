@@ -117,6 +117,8 @@ main(int ac, char **av) {
             } else if(strcmp(optarg, "bless-SIZE") == 0) {
                 asn1_fixer_flags |= A1F_EXTENDED_SizeConstraint;
             } else if(strcmp(optarg, "compound-names-all") == 0) {
+                asn1_compiler_flags |= A1C_COMPOUND_NAMES;
+                asn1_fixer_flags |= A1F_COMPOUND_NAMES;
                 asn1_fixer_flags |= A1F_COMPOUND_NAMES_ALL;
             } else if(strcmp(optarg, "compound-names") == 0) {
                 asn1_compiler_flags |= A1C_COMPOUND_NAMES;
