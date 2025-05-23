@@ -81,18 +81,18 @@ asn1f_process(asn1p_t *asn, enum asn1f_flags flags,
 		}
 	}
 
-    if (flags & A1F_CASE_INSENSITIVE_FILENAMES) {
+    if(flags & A1F_CASE_INSENSITIVE_FILENAMES) {
         arg.flags |= A1F_CASE_INSENSITIVE_FILENAMES;
         flags &= ~A1F_CASE_INSENSITIVE_FILENAMES;
-        if (arg.debug) {
+        if(arg.debug) {
             arg.debug(-1, "Case insensitive filenames");
         }
     }
 
-    if (flags & A1F_COMPOUND_NAMES_ALL) {
+    if(flags & A1F_COMPOUND_NAMES_ALL) {
         arg.flags |= A1F_COMPOUND_NAMES_ALL;
         flags &= ~A1F_COMPOUND_NAMES_ALL;
-        if (arg.debug) {
+        if(arg.debug) {
             arg.debug(-1, "Use compound names for all types");
         }
     }
