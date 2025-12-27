@@ -4,15 +4,19 @@ CFLAGS = $(filter-out $(CODE_COVERAGE_CFLAGS), @CFLAGS@)
 dist_pkgdata_DATA =				\
 		${srcdir}/README		\
 		${srcdir}/*.[ch]		\
-		${srcdir}/file-dependencies
+		${srcdir}/file-dependencies \
+		${srcdir}/compile-example.sh
 
 smodsdir=$(pkgdatadir)
+myincludedir=$(pkgdatadir)
 
 nobase_dist_smods_DATA =     \
 	standard-modules/README  \
 	standard-modules/ASN1-Object-Identifier-Module.asn1 \
 	standard-modules/ASN1C-UsefulInformationObjectClasses.asn1
 
+nobase_dist_myinclude_DATA = \
+    include/*.[ha]
 
 uninstall-local:
 	-@echo -n " "
