@@ -128,7 +128,7 @@ ats_simple_name(enum asn_transfer_syntax syntax) {
     case ATS_BASIC_XER:
     case ATS_CANONICAL_XER:
         return "XER";
-    case ATS_JER_MINIFIED:
+    case ATS_JER:
       return "JER";
     case ATS_UNALIGNED_BASIC_PER:
     case ATS_UNALIGNED_CANONICAL_PER:
@@ -160,9 +160,9 @@ static syntax_selector input_encodings[] = {
      "Input is in Unaligned PER (Packed Encoding Rules)"},
     {"aper", ATS_ALIGNED_BASIC_PER, CODEC_OFFSET(aper_decoder),
      "Input is in Aligned PER (Packed Encoding Rules)"},
-    {"xer", ATS_CANONICAL_XER, CODEC_OFFSET(xer_decoder),
-     "Input is in Canonical XER (XML Encoding Rules)"},
-    {"jer", ATS_JER_MINIFIED, CODEC_OFFSET(jer_decoder),
+    {"xer", ATS_BASIC_XER, CODEC_OFFSET(xer_decoder),
+     "Input is in XER (XML Encoding Rules)"},
+    {"jer", ATS_JER, CODEC_OFFSET(jer_decoder),
      "Input is in JER (JSON Encoding Rules)"},
     {0, ATS_INVALID, 0, 0}};
 
@@ -177,9 +177,9 @@ static syntax_selector output_encodings[] = {
      "Output as Unaligned PER (Packed Encoding Rules)"},
     {"aper", ATS_ALIGNED_CANONICAL_PER, CODEC_OFFSET(aper_encoder),
      "Output as Aligned PER (Packed Encoding Rules)"},
-    {"xer", ATS_CANONICAL_XER, CODEC_OFFSET(xer_encoder),
-     "Output as Canonical XER (XML Encoding Rules)"},
-    {"jer", ATS_JER_MINIFIED, CODEC_OFFSET(jer_encoder),
+    {"xer", ATS_BASIC_XER, CODEC_OFFSET(xer_encoder),
+     "Output as XER (XML Encoding Rules)"},
+    {"jer", ATS_JER, CODEC_OFFSET(jer_encoder),
      "Output as JER (JSON Encoding Rules)"},
     {"text", ATS_NONSTANDARD_PLAINTEXT, CODEC_OFFSET(print_struct),
      "Output as plain semi-structured text"},
@@ -222,7 +222,7 @@ main(int ac, char *av[]) {
     int ch;
     const syntax_selector *sel;
     enum asn_transfer_syntax isyntax = ATS_INVALID;
-    enum asn_transfer_syntax osyntax = ATS_CANONICAL_XER;
+    enum asn_transfer_syntax osyntax = ATS_BASIC_XER;
 
     if(!anyPduType) {
 #ifdef  ASN_PDU_COLLECTION
@@ -439,7 +439,7 @@ main(int ac, char *av[]) {
         const int is_text_output = osyntax == ATS_NONSTANDARD_PLAINTEXT
                                    || osyntax == ATS_BASIC_XER
                                    || osyntax == ATS_CANONICAL_XER
-                                   || osyntax == ATS_JER_MINIFIED;
+                                   || osyntax == ATS_JER;
         if(is_text_output) {
             binary_out = stdout;
         } else {
@@ -962,7 +962,7 @@ data_decode_from_file(enum asn_transfer_syntax isyntax, asn_TYPE_descriptor_t *p
      */
     if(on_first_pdu
     || DynamicBuffer.length
-    || new_offset - old_offset > ((isyntax == ATS_CANONICAL_XER)?sizeof("\r\n")-1:0)
+    || new_offset - old_offset > ((isyntax == ATS_BASIC_XER)?sizeof("\r\n")-1:0)
     ) {
 
 #ifdef    JUNKTEST
